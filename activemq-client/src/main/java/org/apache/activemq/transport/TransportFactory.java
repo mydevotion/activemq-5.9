@@ -35,6 +35,9 @@ import java.util.concurrent.Executor;
 
 public abstract class TransportFactory {
 
+    /**
+     * 去client下面的/services/org/apache/activemq/transport/找TransportFactory的定义
+     */
     private static final FactoryFinder TRANSPORT_FACTORY_FINDER = new FactoryFinder("META-INF/services/org/apache/activemq/transport/");
     private static final FactoryFinder WIREFORMAT_FACTORY_FINDER = new FactoryFinder("META-INF/services/org/apache/activemq/wireformat/");
     private static final ConcurrentHashMap<String, TransportFactory> TRANSPORT_FACTORYS = new ConcurrentHashMap<String, TransportFactory>();
@@ -112,7 +115,7 @@ public abstract class TransportFactory {
     public Transport doConnect(URI location) throws Exception {
         try {
             Map<String, String> options = new HashMap<String, String>(URISupport.parseParameters(location));
-            if( !options.containsKey("wireFormat.host") ) {
+            if (!options.containsKey("wireFormat.host")) {
                 options.put("wireFormat.host", location.getHost());
             }
             WireFormat wf = createWireFormat(options);
@@ -142,14 +145,15 @@ public abstract class TransportFactory {
         }
     }
 
-     /**
-      * Allow registration of a transport factory without wiring via META-INF classes
+    /**
+     * Allow registration of a transport factory without wiring via META-INF classes
+     *
      * @param scheme
      * @param tf
      */
     public static void registerTransportFactory(String scheme, TransportFactory tf) {
         TRANSPORT_FACTORYS.put(scheme, tf);
-      }
+    }
 
     /**
      * Factory method to create a new transport
@@ -167,15 +171,19 @@ public abstract class TransportFactory {
      * @throws IOException
      */
     public static TransportFactory findTransportFactory(URI location) throws IOException {
+        // 取的URI的scheme,如"tcp://localhost:61616"，则返回"tcp"
         String scheme = location.getScheme();
         if (scheme == null) {
             throw new IOException("Transport not scheme specified: [" + location + "]");
         }
+        // 去缓存中取
         TransportFactory tf = TRANSPORT_FACTORYS.get(scheme);
         if (tf == null) {
             // Try to load if from a META-INF property.
             try {
-                tf = (TransportFactory)TRANSPORT_FACTORY_FINDER.newInstance(scheme);
+                // 如果缓存中不存在，就创建
+                // 根据scheme去"/services/org/apache/activemq/transport"下面找配置，然后加载类
+                tf = (TransportFactory) TRANSPORT_FACTORY_FINDER.newInstance(scheme);
                 TRANSPORT_FACTORYS.put(scheme, tf);
             } catch (Throwable e) {
                 throw IOExceptionSupport.create("Transport scheme NOT recognized: [" + scheme + "]", e);
@@ -184,20 +192,37 @@ public abstract class TransportFactory {
         return tf;
     }
 
+    /**
+     * 实现配置类在
+     * "META-INF/services/org/apache/activemq/wireformat/"
+     * 默认使用{@link org.apache.activemq.openwire.OpenWireFormatFactory}
+     *
+     * @param options
+     * @return
+     * @throws IOException
+     */
     protected WireFormat createWireFormat(Map<String, String> options) throws IOException {
         WireFormatFactory factory = createWireFormatFactory(options);
         WireFormat format = factory.createWireFormat();
         return format;
     }
 
+    /**
+     * 生成WireFormatFactory，如果传入的参数中没有key为"wireFormat"的值，则默认采用"default"
+     * 根据反射机制，将options设置到WireFormatFactory上
+     *
+     * @param options
+     * @return
+     * @throws IOException
+     */
     protected WireFormatFactory createWireFormatFactory(Map<String, String> options) throws IOException {
-        String wireFormat = (String)options.remove("wireFormat");
+        String wireFormat = (String) options.remove("wireFormat");
         if (wireFormat == null) {
             wireFormat = getDefaultWireFormatType();
         }
 
         try {
-            WireFormatFactory wff = (WireFormatFactory)WIREFORMAT_FACTORY_FINDER.newInstance(wireFormat);
+            WireFormatFactory wff = (WireFormatFactory) WIREFORMAT_FACTORY_FINDER.newInstance(wireFormat);
             IntrospectionSupport.setProperties(wff, options, "wireFormat.");
             return wff;
         } catch (Throwable e) {
@@ -265,9 +290,9 @@ public abstract class TransportFactory {
     public Transport compositeConfigure(Transport transport, WireFormat format, Map options) {
         if (options.containsKey(WRITE_TIMEOUT_FILTER)) {
             transport = new WriteTimeoutFilter(transport);
-            String soWriteTimeout = (String)options.remove(WRITE_TIMEOUT_FILTER);
-            if (soWriteTimeout!=null) {
-                ((WriteTimeoutFilter)transport).setWriteTimeout(Long.parseLong(soWriteTimeout));
+            String soWriteTimeout = (String) options.remove(WRITE_TIMEOUT_FILTER);
+            if (soWriteTimeout != null) {
+                ((WriteTimeoutFilter) transport).setWriteTimeout(Long.parseLong(soWriteTimeout));
             }
         }
         IntrospectionSupport.setProperties(transport, options);
@@ -277,7 +302,7 @@ public abstract class TransportFactory {
     @SuppressWarnings("rawtypes")
     protected String getOption(Map options, String key, String def) {
         String rc = (String) options.remove(key);
-        if( rc == null ) {
+        if (rc == null) {
             rc = def;
         }
         return rc;

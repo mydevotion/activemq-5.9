@@ -118,7 +118,7 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
 
     public final ConcurrentHashMap<ActiveMQTempDestination, ActiveMQTempDestination> activeTempDestinations = new ConcurrentHashMap<ActiveMQTempDestination, ActiveMQTempDestination>();
 
-    protected boolean dispatchAsync=true;
+    protected boolean dispatchAsync = true;
     protected boolean alwaysSessionAsync = true;
 
     private TaskRunnerFactory sessionTaskRunner;
@@ -154,8 +154,8 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
     private int closeTimeout = 15000;
     private boolean watchTopicAdvisories = true;
     private long warnAboutUnstartedConnectionTimeout = 500L;
-    private int sendTimeout =0;
-    private boolean sendAcksAsync=true;
+    private int sendTimeout = 0;
+    private boolean sendAcksAsync = true;
     private boolean checkForDuplicates = true;
     private boolean queueOnlyConnection = false;
 
@@ -265,7 +265,7 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
      */
     public static ActiveMQConnection makeConnection() throws JMSException {
         ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory();
-        return (ActiveMQConnection)factory.createConnection();
+        return (ActiveMQConnection) factory.createConnection();
     }
 
     /**
@@ -277,7 +277,7 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
      */
     public static ActiveMQConnection makeConnection(String uri) throws JMSException, URISyntaxException {
         ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(uri);
-        return (ActiveMQConnection)factory.createConnection();
+        return (ActiveMQConnection) factory.createConnection();
     }
 
     /**
@@ -291,7 +291,7 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
      */
     public static ActiveMQConnection makeConnection(String user, String password, String uri) throws JMSException, URISyntaxException {
         ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(user, password, new URI(uri));
-        return (ActiveMQConnection)factory.createConnection();
+        return (ActiveMQConnection) factory.createConnection();
     }
 
     /**
@@ -304,18 +304,18 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
     /**
      * Creates a <CODE>Session</CODE> object.
      *
-     * @param transacted indicates whether the session is transacted
+     * @param transacted      indicates whether the session is transacted  指定是否开启事务模式
      * @param acknowledgeMode indicates whether the consumer or the client will
-     *                acknowledge any messages it receives; ignored if the
-     *                session is transacted. Legal values are
-     *                <code>Session.AUTO_ACKNOWLEDGE</code>,
-     *                <code>Session.CLIENT_ACKNOWLEDGE</code>, and
-     *                <code>Session.DUPS_OK_ACKNOWLEDGE</code>.
+     *                        acknowledge any messages it receives; ignored if the
+     *                        session is transacted. Legal values are
+     *                        <code>Session.AUTO_ACKNOWLEDGE</code>,
+     *                        <code>Session.CLIENT_ACKNOWLEDGE</code>, and
+     *                        <code>Session.DUPS_OK_ACKNOWLEDGE</code>.
      * @return a newly created session
      * @throws JMSException if the <CODE>Connection</CODE> object fails to
-     *                 create a session due to some internal error or lack of
-     *                 support for the specific transaction and acknowledgement
-     *                 mode.
+     *                      create a session due to some internal error or lack of
+     *                      support for the specific transaction and acknowledgement
+     *                      mode.
      * @see Session#AUTO_ACKNOWLEDGE
      * @see Session#CLIENT_ACKNOWLEDGE
      * @see Session#DUPS_OK_ACKNOWLEDGE
@@ -325,8 +325,8 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
     public Session createSession(boolean transacted, int acknowledgeMode) throws JMSException {
         checkClosedOrFailed();
         ensureConnectionInfoSent();
-        if(!transacted) {
-            if (acknowledgeMode==Session.SESSION_TRANSACTED) {
+        if (!transacted) {
+            if (acknowledgeMode == Session.SESSION_TRANSACTED) {
                 throw new JMSException("acknowledgeMode SESSION_TRANSACTED cannot be used for an non-transacted Session");
             } else if (acknowledgeMode < Session.SESSION_TRANSACTED || acknowledgeMode > ActiveMQSession.MAX_ACK_CONSTANT) {
                 throw new JMSException("invalid acknowledgeMode: " + acknowledgeMode + ". Valid values are Session.AUTO_ACKNOWLEDGE (1), " +
@@ -334,7 +334,7 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
             }
         }
         return new ActiveMQSession(this, getNextSessionId(), transacted ? Session.SESSION_TRANSACTED : (acknowledgeMode == Session.SESSION_TRANSACTED
-            ? Session.AUTO_ACKNOWLEDGE : acknowledgeMode), isDispatchAsync(), isAlwaysSessionAsync());
+                ? Session.AUTO_ACKNOWLEDGE : acknowledgeMode), isDispatchAsync(), isAlwaysSessionAsync());
     }
 
     /**
@@ -346,7 +346,7 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
 
     /**
      * Gets the client identifier for this connection.
-     * <P>
+     * <p/>
      * This value is specific to the JMS provider. It is either preconfigured by
      * an administrator in a <CODE> ConnectionFactory</CODE> object or assigned
      * dynamically by the application by calling the <code>setClientID</code>
@@ -354,7 +354,7 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
      *
      * @return the unique client identifier
      * @throws JMSException if the JMS provider fails to return the client ID
-     *                 for this connection due to some internal error.
+     *                      for this connection due to some internal error.
      */
     @Override
     public String getClientID() throws JMSException {
@@ -364,12 +364,12 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
 
     /**
      * Sets the client identifier for this connection.
-     * <P>
+     * <p/>
      * The preferred way to assign a JMS client's client identifier is for it to
      * be configured in a client-specific <CODE>ConnectionFactory</CODE>
      * object and transparently assigned to the <CODE>Connection</CODE> object
      * it creates.
-     * <P>
+     * <p/>
      * Alternatively, a client can set a connection's client identifier using a
      * provider-specific value. The facility to set a connection's client
      * identifier explicitly is not a mechanism for overriding the identifier
@@ -381,24 +381,26 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
      * connection and before any other action on the connection is taken. After
      * this point, setting the client identifier is a programming error that
      * should throw an <CODE>IllegalStateException</CODE>.
-     * <P>
+     * <p/>
      * The purpose of the client identifier is to associate a connection and its
      * objects with a state maintained on behalf of the client by a provider.
      * The only such state identified by the JMS API is that required to support
      * durable subscriptions.
-     * <P>
+     * <p/>
      * If another connection with the same <code>clientID</code> is already
      * running when this method is called, the JMS provider should detect the
      * duplicate ID and throw an <CODE>InvalidClientIDException</CODE>.
      *
      * @param newClientID the unique client identifier
      * @throws JMSException if the JMS provider fails to set the client ID for
-     *                 this connection due to some internal error.
-     * @throws javax.jms.InvalidClientIDException if the JMS client specifies an
-     *                 invalid or duplicate client ID.
-     * @throws javax.jms.IllegalStateException if the JMS client attempts to set
-     *                 a connection's client ID at the wrong time or when it has
-     *                 been administratively configured.
+     *                      this connection due to some internal error.
+     * @throws javax.jms.InvalidClientIDException
+     *                      if the JMS client specifies an
+     *                      invalid or duplicate client ID.
+     * @throws javax.jms.IllegalStateException
+     *                      if the JMS client attempts to set
+     *                      a connection's client ID at the wrong time or when it has
+     *                      been administratively configured.
      */
     @Override
     public void setClientID(String newClientID) throws JMSException {
@@ -431,7 +433,7 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
      *
      * @return the connection metadata
      * @throws JMSException if the JMS provider fails to get the connection
-     *                 metadata for this connection.
+     *                      metadata for this connection.
      * @see javax.jms.ConnectionMetaData
      */
     @Override
@@ -449,7 +451,7 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
      *         null, if no <CODE>ExceptionListener</CODE> is associated with
      *         this connection.
      * @throws JMSException if the JMS provider fails to get the
-     *                 <CODE>ExceptionListener</CODE> for this connection.
+     *                      <CODE>ExceptionListener</CODE> for this connection.
      * @see javax.jms.Connection#setExceptionListener(ExceptionListener)
      */
     @Override
@@ -460,26 +462,26 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
 
     /**
      * Sets an exception listener for this connection.
-     * <P>
+     * <p/>
      * If a JMS provider detects a serious problem with a connection, it informs
      * the connection's <CODE> ExceptionListener</CODE>, if one has been
      * registered. It does this by calling the listener's <CODE>onException
      * </CODE>
      * method, passing it a <CODE>JMSException</CODE> object describing the
      * problem.
-     * <P>
+     * <p/>
      * An exception listener allows a client to be notified of a problem
      * asynchronously. Some connections only consume messages, so they would
      * have no other way to learn their connection has failed.
-     * <P>
+     * <p/>
      * A connection serializes execution of its <CODE>ExceptionListener</CODE>.
-     * <P>
+     * <p/>
      * A JMS provider should attempt to resolve connection problems itself
      * before it notifies the client of them.
      *
      * @param listener the exception listener
      * @throws JMSException if the JMS provider fails to set the exception
-     *                 listener for this connection.
+     *                      listener for this connection.
      */
     @Override
     public void setExceptionListener(ExceptionListener listener) throws JMSException {
@@ -517,7 +519,7 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
      * ignored.
      *
      * @throws JMSException if the JMS provider fails to start message delivery
-     *                 due to some internal error.
+     *                      due to some internal error.
      * @see javax.jms.Connection#stop()
      */
     @Override
@@ -525,7 +527,7 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
         checkClosedOrFailed();
         ensureConnectionInfoSent();
         if (started.compareAndSet(false, true)) {
-            for (Iterator<ActiveMQSession> i = sessions.iterator(); i.hasNext();) {
+            for (Iterator<ActiveMQSession> i = sessions.iterator(); i.hasNext(); ) {
                 ActiveMQSession session = i.next();
                 session.start();
             }
@@ -538,14 +540,14 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
      * the connection is stopped, delivery to all the connection's message
      * consumers is inhibited: synchronous receives block, and messages are not
      * delivered to message listeners.
-     * <P>
+     * <p/>
      * This call blocks until receives and/or message listeners in progress have
      * completed.
-     * <P>
+     * <p/>
      * Stopping a connection has no effect on its ability to send messages. A
      * call to <CODE>stop</CODE> on a connection that has already been stopped
      * is ignored.
-     * <P>
+     * <p/>
      * A call to <CODE>stop</CODE> must not return until delivery of messages
      * has paused. This means that a client can rely on the fact that none of
      * its message listeners will be called and that all threads of control
@@ -553,14 +555,14 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
      * message until the connection is restarted. The receive timers for a
      * stopped connection continue to advance, so receives may time out while
      * the connection is stopped.
-     * <P>
+     * <p/>
      * If message listeners are running when <CODE>stop</CODE> is invoked, the
      * <CODE>stop</CODE> call must wait until all of them have returned before
      * it may return. While these message listeners are completing, they must
      * have the full services of the connection available to them.
      *
      * @throws JMSException if the JMS provider fails to stop message delivery
-     *                 due to some internal error.
+     *                      due to some internal error.
      * @see javax.jms.Connection#start()
      */
     @Override
@@ -569,18 +571,18 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
     }
 
     /**
-     * @see #stop()
      * @param checkClosed <tt>true</tt> to check for already closed and throw {@link java.lang.IllegalStateException} if already closed,
      *                    <tt>false</tt> to skip this check
      * @throws JMSException if the JMS provider fails to stop message delivery due to some internal error.
+     * @see #stop()
      */
     void doStop(boolean checkClosed) throws JMSException {
         if (checkClosed) {
             checkClosedOrFailed();
         }
         if (started.compareAndSet(true, false)) {
-            synchronized(sessions) {
-                for (Iterator<ActiveMQSession> i = sessions.iterator(); i.hasNext();) {
+            synchronized (sessions) {
+                for (Iterator<ActiveMQSession> i = sessions.iterator(); i.hasNext(); ) {
                     ActiveMQSession s = i.next();
                     s.stop();
                 }
@@ -590,17 +592,17 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
 
     /**
      * Closes the connection.
-     * <P>
+     * <p/>
      * Since a provider typically allocates significant resources outside the
      * JVM on behalf of a connection, clients should close these resources when
      * they are not needed. Relying on garbage collection to eventually reclaim
      * these resources may not be timely enough.
-     * <P>
+     * <p/>
      * There is no need to close the sessions, producers, and consumers of a
      * closed connection.
-     * <P>
+     * <p/>
      * Closing a connection causes all temporary destinations to be deleted.
-     * <P>
+     * <p/>
      * When this method is invoked, it should not return until message
      * processing has been shut down in an orderly fashion. This means that all
      * message listeners that may have been running have returned, and that all
@@ -612,7 +614,7 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
      * connection <CODE>close</CODE> is invoked, all the facilities of the
      * connection and its sessions must remain available to those listeners
      * until they return control to the JMS provider.
-     * <P>
+     * <p/>
      * Closing a connection causes any of its sessions' transactions in progress
      * to be rolled back. In the case where a session's work is coordinated by
      * an external transaction manager, a session's <CODE>commit</CODE> and
@@ -620,16 +622,16 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
      * session's work is determined later by the transaction manager. Closing a
      * connection does NOT force an acknowledgment of client-acknowledged
      * sessions.
-     * <P>
+     * <p/>
      * Invoking the <CODE>acknowledge</CODE> method of a received message from
      * a closed connection's session must throw an
      * <CODE>IllegalStateException</CODE>. Closing a closed connection must
      * NOT throw an exception.
      *
      * @throws JMSException if the JMS provider fails to close the connection
-     *                 due to some internal error. For example, a failure to
-     *                 release resources or to close a socket connection can
-     *                 cause this exception to be thrown.
+     *                      due to some internal error. For example, a failure to
+     *                      release resources or to close a socket connection can
+     *                      cause this exception to be thrown.
      */
     @Override
     public void close() throws JMSException {
@@ -664,27 +666,27 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
                         try {
                             scheduler.stop();
                         } catch (Exception e) {
-                            JMSException ex =  JMSExceptionSupport.create(e);
+                            JMSException ex = JMSExceptionSupport.create(e);
                             throw ex;
                         }
                     }
 
                     long lastDeliveredSequenceId = 0;
-                    for (Iterator<ActiveMQSession> i = this.sessions.iterator(); i.hasNext();) {
+                    for (Iterator<ActiveMQSession> i = this.sessions.iterator(); i.hasNext(); ) {
                         ActiveMQSession s = i.next();
                         s.dispose();
                         lastDeliveredSequenceId = Math.max(lastDeliveredSequenceId, s.getLastDeliveredSequenceId());
                     }
-                    for (Iterator<ActiveMQConnectionConsumer> i = this.connectionConsumers.iterator(); i.hasNext();) {
+                    for (Iterator<ActiveMQConnectionConsumer> i = this.connectionConsumers.iterator(); i.hasNext(); ) {
                         ActiveMQConnectionConsumer c = i.next();
                         c.dispose();
                     }
                     // Stream are deprecated and will be removed in a later release.
-                    for (Iterator<ActiveMQInputStream> i = this.inputStreams.iterator(); i.hasNext();) {
+                    for (Iterator<ActiveMQInputStream> i = this.inputStreams.iterator(); i.hasNext(); ) {
                         ActiveMQInputStream c = i.next();
                         c.dispose();
                     }
-                    for (Iterator<ActiveMQOutputStream> i = this.outputStreams.iterator(); i.hasNext();) {
+                    for (Iterator<ActiveMQOutputStream> i = this.outputStreams.iterator(); i.hasNext(); ) {
                         ActiveMQOutputStream c = i.next();
                         c.dispose();
                     }
@@ -749,31 +751,33 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
      * Create a durable connection consumer for this connection (optional
      * operation). This is an expert facility not used by regular JMS clients.
      *
-     * @param topic topic to access
+     * @param topic            topic to access
      * @param subscriptionName durable subscription name
-     * @param messageSelector only messages with properties matching the message
-     *                selector expression are delivered. A value of null or an
-     *                empty string indicates that there is no message selector
-     *                for the message consumer.
-     * @param sessionPool the server session pool to associate with this durable
-     *                connection consumer
-     * @param maxMessages the maximum number of messages that can be assigned to
-     *                a server session at one time
+     * @param messageSelector  only messages with properties matching the message
+     *                         selector expression are delivered. A value of null or an
+     *                         empty string indicates that there is no message selector
+     *                         for the message consumer.
+     * @param sessionPool      the server session pool to associate with this durable
+     *                         connection consumer
+     * @param maxMessages      the maximum number of messages that can be assigned to
+     *                         a server session at one time
      * @return the durable connection consumer
      * @throws JMSException if the <CODE>Connection</CODE> object fails to
-     *                 create a connection consumer due to some internal error
-     *                 or invalid arguments for <CODE>sessionPool</CODE> and
-     *                 <CODE>messageSelector</CODE>.
-     * @throws javax.jms.InvalidDestinationException if an invalid destination
-     *                 is specified.
-     * @throws javax.jms.InvalidSelectorException if the message selector is
-     *                 invalid.
+     *                      create a connection consumer due to some internal error
+     *                      or invalid arguments for <CODE>sessionPool</CODE> and
+     *                      <CODE>messageSelector</CODE>.
+     * @throws javax.jms.InvalidDestinationException
+     *                      if an invalid destination
+     *                      is specified.
+     * @throws javax.jms.InvalidSelectorException
+     *                      if the message selector is
+     *                      invalid.
      * @see javax.jms.ConnectionConsumer
      * @since 1.1
      */
     @Override
     public ConnectionConsumer createDurableConnectionConsumer(Topic topic, String subscriptionName, String messageSelector, ServerSessionPool sessionPool, int maxMessages)
-        throws JMSException {
+            throws JMSException {
         return this.createDurableConnectionConsumer(topic, subscriptionName, messageSelector, sessionPool, maxMessages, false);
     }
 
@@ -781,27 +785,29 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
      * Create a durable connection consumer for this connection (optional
      * operation). This is an expert facility not used by regular JMS clients.
      *
-     * @param topic topic to access
+     * @param topic            topic to access
      * @param subscriptionName durable subscription name
-     * @param messageSelector only messages with properties matching the message
-     *                selector expression are delivered. A value of null or an
-     *                empty string indicates that there is no message selector
-     *                for the message consumer.
-     * @param sessionPool the server session pool to associate with this durable
-     *                connection consumer
-     * @param maxMessages the maximum number of messages that can be assigned to
-     *                a server session at one time
-     * @param noLocal set true if you want to filter out messages published
-     *                locally
+     * @param messageSelector  only messages with properties matching the message
+     *                         selector expression are delivered. A value of null or an
+     *                         empty string indicates that there is no message selector
+     *                         for the message consumer.
+     * @param sessionPool      the server session pool to associate with this durable
+     *                         connection consumer
+     * @param maxMessages      the maximum number of messages that can be assigned to
+     *                         a server session at one time
+     * @param noLocal          set true if you want to filter out messages published
+     *                         locally
      * @return the durable connection consumer
      * @throws JMSException if the <CODE>Connection</CODE> object fails to
-     *                 create a connection consumer due to some internal error
-     *                 or invalid arguments for <CODE>sessionPool</CODE> and
-     *                 <CODE>messageSelector</CODE>.
-     * @throws javax.jms.InvalidDestinationException if an invalid destination
-     *                 is specified.
-     * @throws javax.jms.InvalidSelectorException if the message selector is
-     *                 invalid.
+     *                      create a connection consumer due to some internal error
+     *                      or invalid arguments for <CODE>sessionPool</CODE> and
+     *                      <CODE>messageSelector</CODE>.
+     * @throws javax.jms.InvalidDestinationException
+     *                      if an invalid destination
+     *                      is specified.
+     * @throws javax.jms.InvalidSelectorException
+     *                      if the message selector is
+     *                      invalid.
      * @see javax.jms.ConnectionConsumer
      * @since 1.1
      */
@@ -1118,49 +1124,51 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
     /**
      * Creates a <CODE>TopicSession</CODE> object.
      *
-     * @param transacted indicates whether the session is transacted
+     * @param transacted      indicates whether the session is transacted
      * @param acknowledgeMode indicates whether the consumer or the client will
-     *                acknowledge any messages it receives; ignored if the
-     *                session is transacted. Legal values are
-     *                <code>Session.AUTO_ACKNOWLEDGE</code>,
-     *                <code>Session.CLIENT_ACKNOWLEDGE</code>, and
-     *                <code>Session.DUPS_OK_ACKNOWLEDGE</code>.
+     *                        acknowledge any messages it receives; ignored if the
+     *                        session is transacted. Legal values are
+     *                        <code>Session.AUTO_ACKNOWLEDGE</code>,
+     *                        <code>Session.CLIENT_ACKNOWLEDGE</code>, and
+     *                        <code>Session.DUPS_OK_ACKNOWLEDGE</code>.
      * @return a newly created topic session
      * @throws JMSException if the <CODE>TopicConnection</CODE> object fails
-     *                 to create a session due to some internal error or lack of
-     *                 support for the specific transaction and acknowledgement
-     *                 mode.
+     *                      to create a session due to some internal error or lack of
+     *                      support for the specific transaction and acknowledgement
+     *                      mode.
      * @see Session#AUTO_ACKNOWLEDGE
      * @see Session#CLIENT_ACKNOWLEDGE
      * @see Session#DUPS_OK_ACKNOWLEDGE
      */
     @Override
     public TopicSession createTopicSession(boolean transacted, int acknowledgeMode) throws JMSException {
-        return new ActiveMQTopicSession((ActiveMQSession)createSession(transacted, acknowledgeMode));
+        return new ActiveMQTopicSession((ActiveMQSession) createSession(transacted, acknowledgeMode));
     }
 
     /**
      * Creates a connection consumer for this connection (optional operation).
      * This is an expert facility not used by regular JMS clients.
      *
-     * @param topic the topic to access
+     * @param topic           the topic to access
      * @param messageSelector only messages with properties matching the message
-     *                selector expression are delivered. A value of null or an
-     *                empty string indicates that there is no message selector
-     *                for the message consumer.
-     * @param sessionPool the server session pool to associate with this
-     *                connection consumer
-     * @param maxMessages the maximum number of messages that can be assigned to
-     *                a server session at one time
+     *                        selector expression are delivered. A value of null or an
+     *                        empty string indicates that there is no message selector
+     *                        for the message consumer.
+     * @param sessionPool     the server session pool to associate with this
+     *                        connection consumer
+     * @param maxMessages     the maximum number of messages that can be assigned to
+     *                        a server session at one time
      * @return the connection consumer
      * @throws JMSException if the <CODE>TopicConnection</CODE> object fails
-     *                 to create a connection consumer due to some internal
-     *                 error or invalid arguments for <CODE>sessionPool</CODE>
-     *                 and <CODE>messageSelector</CODE>.
-     * @throws javax.jms.InvalidDestinationException if an invalid topic is
-     *                 specified.
-     * @throws javax.jms.InvalidSelectorException if the message selector is
-     *                 invalid.
+     *                      to create a connection consumer due to some internal
+     *                      error or invalid arguments for <CODE>sessionPool</CODE>
+     *                      and <CODE>messageSelector</CODE>.
+     * @throws javax.jms.InvalidDestinationException
+     *                      if an invalid topic is
+     *                      specified.
+     * @throws javax.jms.InvalidSelectorException
+     *                      if the message selector is
+     *                      invalid.
      * @see javax.jms.ConnectionConsumer
      */
     @Override
@@ -1172,24 +1180,26 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
      * Creates a connection consumer for this connection (optional operation).
      * This is an expert facility not used by regular JMS clients.
      *
-     * @param queue the queue to access
+     * @param queue           the queue to access
      * @param messageSelector only messages with properties matching the message
-     *                selector expression are delivered. A value of null or an
-     *                empty string indicates that there is no message selector
-     *                for the message consumer.
-     * @param sessionPool the server session pool to associate with this
-     *                connection consumer
-     * @param maxMessages the maximum number of messages that can be assigned to
-     *                a server session at one time
+     *                        selector expression are delivered. A value of null or an
+     *                        empty string indicates that there is no message selector
+     *                        for the message consumer.
+     * @param sessionPool     the server session pool to associate with this
+     *                        connection consumer
+     * @param maxMessages     the maximum number of messages that can be assigned to
+     *                        a server session at one time
      * @return the connection consumer
      * @throws JMSException if the <CODE>QueueConnection</CODE> object fails
-     *                 to create a connection consumer due to some internal
-     *                 error or invalid arguments for <CODE>sessionPool</CODE>
-     *                 and <CODE>messageSelector</CODE>.
-     * @throws javax.jms.InvalidDestinationException if an invalid queue is
-     *                 specified.
-     * @throws javax.jms.InvalidSelectorException if the message selector is
-     *                 invalid.
+     *                      to create a connection consumer due to some internal
+     *                      error or invalid arguments for <CODE>sessionPool</CODE>
+     *                      and <CODE>messageSelector</CODE>.
+     * @throws javax.jms.InvalidDestinationException
+     *                      if an invalid queue is
+     *                      specified.
+     * @throws javax.jms.InvalidSelectorException
+     *                      if the message selector is
+     *                      invalid.
      * @see javax.jms.ConnectionConsumer
      */
     @Override
@@ -1201,24 +1211,26 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
      * Creates a connection consumer for this connection (optional operation).
      * This is an expert facility not used by regular JMS clients.
      *
-     * @param destination the destination to access
+     * @param destination     the destination to access
      * @param messageSelector only messages with properties matching the message
-     *                selector expression are delivered. A value of null or an
-     *                empty string indicates that there is no message selector
-     *                for the message consumer.
-     * @param sessionPool the server session pool to associate with this
-     *                connection consumer
-     * @param maxMessages the maximum number of messages that can be assigned to
-     *                a server session at one time
+     *                        selector expression are delivered. A value of null or an
+     *                        empty string indicates that there is no message selector
+     *                        for the message consumer.
+     * @param sessionPool     the server session pool to associate with this
+     *                        connection consumer
+     * @param maxMessages     the maximum number of messages that can be assigned to
+     *                        a server session at one time
      * @return the connection consumer
      * @throws JMSException if the <CODE>Connection</CODE> object fails to
-     *                 create a connection consumer due to some internal error
-     *                 or invalid arguments for <CODE>sessionPool</CODE> and
-     *                 <CODE>messageSelector</CODE>.
-     * @throws javax.jms.InvalidDestinationException if an invalid destination
-     *                 is specified.
-     * @throws javax.jms.InvalidSelectorException if the message selector is
-     *                 invalid.
+     *                      create a connection consumer due to some internal error
+     *                      or invalid arguments for <CODE>sessionPool</CODE> and
+     *                      <CODE>messageSelector</CODE>.
+     * @throws javax.jms.InvalidDestinationException
+     *                      if an invalid destination
+     *                      is specified.
+     * @throws javax.jms.InvalidSelectorException
+     *                      if the message selector is
+     *                      invalid.
      * @see javax.jms.ConnectionConsumer
      * @since 1.1
      */
@@ -1228,7 +1240,7 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
     }
 
     public ConnectionConsumer createConnectionConsumer(Destination destination, String messageSelector, ServerSessionPool sessionPool, int maxMessages, boolean noLocal)
-        throws JMSException {
+            throws JMSException {
 
         checkClosedOrFailed();
         ensureConnectionInfoSent();
@@ -1267,25 +1279,25 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
     /**
      * Creates a <CODE>QueueSession</CODE> object.
      *
-     * @param transacted indicates whether the session is transacted
+     * @param transacted      indicates whether the session is transacted
      * @param acknowledgeMode indicates whether the consumer or the client will
-     *                acknowledge any messages it receives; ignored if the
-     *                session is transacted. Legal values are
-     *                <code>Session.AUTO_ACKNOWLEDGE</code>,
-     *                <code>Session.CLIENT_ACKNOWLEDGE</code>, and
-     *                <code>Session.DUPS_OK_ACKNOWLEDGE</code>.
+     *                        acknowledge any messages it receives; ignored if the
+     *                        session is transacted. Legal values are
+     *                        <code>Session.AUTO_ACKNOWLEDGE</code>,
+     *                        <code>Session.CLIENT_ACKNOWLEDGE</code>, and
+     *                        <code>Session.DUPS_OK_ACKNOWLEDGE</code>.
      * @return a newly created queue session
      * @throws JMSException if the <CODE>QueueConnection</CODE> object fails
-     *                 to create a session due to some internal error or lack of
-     *                 support for the specific transaction and acknowledgement
-     *                 mode.
+     *                      to create a session due to some internal error or lack of
+     *                      support for the specific transaction and acknowledgement
+     *                      mode.
      * @see Session#AUTO_ACKNOWLEDGE
      * @see Session#CLIENT_ACKNOWLEDGE
      * @see Session#DUPS_OK_ACKNOWLEDGE
      */
     @Override
     public QueueSession createQueueSession(boolean transacted, int acknowledgeMode) throws JMSException {
-        return new ActiveMQQueueSession((ActiveMQSession)createSession(transacted, acknowledgeMode));
+        return new ActiveMQQueueSession((ActiveMQSession) createSession(transacted, acknowledgeMode));
     }
 
     /**
@@ -1332,7 +1344,7 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
      * @throws JMSException
      */
     public void syncSendPacket(final Command command, final AsyncCallback onComplete) throws JMSException {
-        if(onComplete==null) {
+        if (onComplete == null) {
             syncSendPacket(command);
         } else {
             if (isClosed()) {
@@ -1347,33 +1359,33 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
                         try {
                             response = resp.getResult();
                             if (response.isException()) {
-                                ExceptionResponse er = (ExceptionResponse)response;
+                                ExceptionResponse er = (ExceptionResponse) response;
                                 exception = er.getException();
                             }
                         } catch (Exception e) {
                             exception = e;
                         }
-                        if(exception!=null) {
-                            if ( exception instanceof JMSException) {
+                        if (exception != null) {
+                            if (exception instanceof JMSException) {
                                 onComplete.onException((JMSException) exception);
                             } else {
-                                if (isClosed()||closing.get()) {
+                                if (isClosed() || closing.get()) {
                                     LOG.debug("Received an exception but connection is closing");
                                 }
                                 JMSException jmsEx = null;
                                 try {
                                     jmsEx = JMSExceptionSupport.create(exception);
-                                } catch(Throwable e) {
-                                    LOG.error("Caught an exception trying to create a JMSException for " +exception,e);
+                                } catch (Throwable e) {
+                                    LOG.error("Caught an exception trying to create a JMSException for " + exception, e);
                                 }
                                 // dispose of transport for security exceptions on connection initiation
-                                if (exception instanceof SecurityException && command instanceof ConnectionInfo){
+                                if (exception instanceof SecurityException && command instanceof ConnectionInfo) {
                                     Transport t = transport;
-                                    if (null != t){
+                                    if (null != t) {
                                         ServiceSupport.dispose(t);
                                     }
                                 }
-                                if (jmsEx !=null) {
+                                if (jmsEx != null) {
                                     onComplete.onException(jmsEx);
                                 }
                             }
@@ -1394,29 +1406,29 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
         } else {
 
             try {
-                Response response = (Response)this.transport.request(command);
+                Response response = (Response) this.transport.request(command);
                 if (response.isException()) {
-                    ExceptionResponse er = (ExceptionResponse)response;
+                    ExceptionResponse er = (ExceptionResponse) response;
                     if (er.getException() instanceof JMSException) {
-                        throw (JMSException)er.getException();
+                        throw (JMSException) er.getException();
                     } else {
-                        if (isClosed()||closing.get()) {
+                        if (isClosed() || closing.get()) {
                             LOG.debug("Received an exception but connection is closing");
                         }
                         JMSException jmsEx = null;
                         try {
                             jmsEx = JMSExceptionSupport.create(er.getException());
-                        } catch(Throwable e) {
-                            LOG.error("Caught an exception trying to create a JMSException for " +er.getException(),e);
+                        } catch (Throwable e) {
+                            LOG.error("Caught an exception trying to create a JMSException for " + er.getException(), e);
                         }
                         //dispose of transport for security exceptions
-                        if (er.getException() instanceof SecurityException && command instanceof ConnectionInfo){
+                        if (er.getException() instanceof SecurityException && command instanceof ConnectionInfo) {
                             Transport t = this.transport;
-                            if (null != t){
+                            if (null != t) {
                                 ServiceSupport.dispose(t);
                             }
                         }
-                        if (jmsEx !=null) {
+                        if (jmsEx != null) {
                             throw jmsEx;
                         }
                     }
@@ -1450,9 +1462,9 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
                     ? this.transport.request(command, timeout)
                     : this.transport.request(command));
             if (response != null && response.isException()) {
-                ExceptionResponse er = (ExceptionResponse)response;
+                ExceptionResponse er = (ExceptionResponse) response;
                 if (er.getException() instanceof JMSException) {
-                    throw (JMSException)er.getException();
+                    throw (JMSException) er.getException();
                 } else {
                     throw JMSExceptionSupport.create(er.getException());
                 }
@@ -1501,7 +1513,7 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
      * @throws JMSException
      */
     protected void ensureConnectionInfoSent() throws JMSException {
-        synchronized(this.ensureConnectionInfoSentMutex) {
+        synchronized (this.ensureConnectionInfoSentMutex) {
             // Can we skip sending the ConnectionInfo packet??
             if (isConnectionInfoSentToBroker || closed.get()) {
                 return;
@@ -1593,21 +1605,21 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
             advisoryConsumer = null;
         }
 
-        for (Iterator<ActiveMQSession> i = this.sessions.iterator(); i.hasNext();) {
+        for (Iterator<ActiveMQSession> i = this.sessions.iterator(); i.hasNext(); ) {
             ActiveMQSession s = i.next();
             s.dispose();
         }
-        for (Iterator<ActiveMQConnectionConsumer> i = this.connectionConsumers.iterator(); i.hasNext();) {
+        for (Iterator<ActiveMQConnectionConsumer> i = this.connectionConsumers.iterator(); i.hasNext(); ) {
             ActiveMQConnectionConsumer c = i.next();
             c.dispose();
         }
 
         // Stream are deprecated and will be removed in a later release.
-        for (Iterator<ActiveMQInputStream> i = this.inputStreams.iterator(); i.hasNext();) {
+        for (Iterator<ActiveMQInputStream> i = this.inputStreams.iterator(); i.hasNext(); ) {
             ActiveMQInputStream c = i.next();
             c.dispose();
         }
-        for (Iterator<ActiveMQOutputStream> i = this.outputStreams.iterator(); i.hasNext();) {
+        for (Iterator<ActiveMQOutputStream> i = this.outputStreams.iterator(); i.hasNext(); ) {
             ActiveMQOutputStream c = i.next();
             c.dispose();
         }
@@ -1628,9 +1640,9 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
     }
 
     @Override
-    public void finalize() throws Throwable{
+    public void finalize() throws Throwable {
         Scheduler s = this.scheduler;
-        if (s != null){
+        if (s != null) {
             s.stop();
         }
     }
@@ -1756,10 +1768,11 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
 
     /**
      * The max time in milliseconds between optimized ack batches
+     *
      * @param optimizeAcknowledgeTimeOut
      */
     public void setOptimizeAcknowledgeTimeOut(long optimizeAcknowledgeTimeOut) {
-        this.optimizeAcknowledgeTimeOut =  optimizeAcknowledgeTimeOut;
+        this.optimizeAcknowledgeTimeOut = optimizeAcknowledgeTimeOut;
     }
 
     public long getOptimizeAcknowledgeTimeOut() {
@@ -1854,7 +1867,7 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
      */
     @Override
     public void onCommand(final Object o) {
-        final Command command = (Command)o;
+        final Command command = (Command) o;
         if (!closed.get() && command != null) {
             try {
                 command.visit(new CommandVisitorAdapter() {
@@ -1921,19 +1934,19 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
 
                     @Override
                     public Response processConnectionControl(ConnectionControl control) throws Exception {
-                        onConnectionControl((ConnectionControl)command);
+                        onConnectionControl((ConnectionControl) command);
                         return null;
                     }
 
                     @Override
                     public Response processConsumerControl(ConsumerControl control) throws Exception {
-                        onConsumerControl((ConsumerControl)command);
+                        onConsumerControl((ConsumerControl) command);
                         return null;
                     }
 
                     @Override
                     public Response processWireFormat(WireFormatInfo info) throws Exception {
-                        onWireFormatInfo((WireFormatInfo)command);
+                        onWireFormatInfo((WireFormatInfo) command);
                         return null;
                     }
                 });
@@ -1942,7 +1955,7 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
             }
         }
 
-        for (Iterator<TransportListener> iter = transportListeners.iterator(); iter.hasNext();) {
+        for (Iterator<TransportListener> iter = transportListeners.iterator(); iter.hasNext(); ) {
             TransportListener listener = iter.next();
             listener.onCommand(command);
         }
@@ -1963,8 +1976,8 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
      * @param error the exception that the problem
      */
     public void onClientInternalException(final Throwable error) {
-        if ( !closed.get() && !closing.get() ) {
-            if ( this.clientInternalExceptionListener != null ) {
+        if (!closed.get() && !closing.get()) {
+            if (this.clientInternalExceptionListener != null) {
                 executor.execute(new Runnable() {
                     @Override
                     public void run() {
@@ -1990,7 +2003,7 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
                 if (!(error instanceof JMSException)) {
                     error = JMSExceptionSupport.create(error);
                 }
-                final JMSException e = (JMSException)error;
+                final JMSException e = (JMSException) error;
 
                 executor.execute(new Runnable() {
                     @Override
@@ -2020,7 +2033,7 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
                     } catch (JMSException e) {
                         LOG.warn("Exception during connection cleanup, " + e, e);
                     }
-                    for (Iterator<TransportListener> iter = transportListeners.iterator(); iter.hasNext();) {
+                    for (Iterator<TransportListener> iter = transportListeners.iterator(); iter.hasNext(); ) {
                         TransportListener listener = iter.next();
                         listener.onException(error);
                     }
@@ -2032,7 +2045,7 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
     @Override
     public void transportInterupted() {
         transportInterruptionProcessingComplete.set(1);
-        for (Iterator<ActiveMQSession> i = this.sessions.iterator(); i.hasNext();) {
+        for (Iterator<ActiveMQSession> i = this.sessions.iterator(); i.hasNext(); ) {
             ActiveMQSession s = i.next();
             s.clearMessagesInProgress(transportInterruptionProcessingComplete);
         }
@@ -2048,7 +2061,7 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
             signalInterruptionProcessingNeeded();
         }
 
-        for (Iterator<TransportListener> iter = transportListeners.iterator(); iter.hasNext();) {
+        for (Iterator<TransportListener> iter = transportListeners.iterator(); iter.hasNext(); ) {
             TransportListener listener = iter.next();
             listener.transportInterupted();
         }
@@ -2056,7 +2069,7 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
 
     @Override
     public void transportResumed() {
-        for (Iterator<TransportListener> iter = transportListeners.iterator(); iter.hasNext();) {
+        for (Iterator<TransportListener> iter = transportListeners.iterator(); iter.hasNext(); ) {
             TransportListener listener = iter.next();
             listener.transportResumed();
         }
@@ -2172,8 +2185,8 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
      * not block delivery to other consumers.
      *
      * @param asyncDispatch If true then consumers created on this connection
-     *                will default to having their messages dispatched
-     *                asynchronously. The default value is true.
+     *                      will default to having their messages dispatched
+     *                      asynchronously. The default value is true.
      */
     public void setDispatchAsync(boolean asyncDispatch) {
         this.dispatchAsync = asyncDispatch;
@@ -2208,7 +2221,7 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
     @Override
     @Deprecated
     public InputStream createInputStream(Destination dest, String messageSelector, boolean noLocal) throws JMSException {
-        return createInputStream(dest, messageSelector, noLocal,  -1);
+        return createInputStream(dest, messageSelector, noLocal, -1);
     }
 
     @Override
@@ -2273,11 +2286,11 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
      * messages on the stream.
      *
      * @param streamProperties defines a map of key-value pairs where the keys
-     *                are strings and the values are primitive values (numbers
-     *                and strings) which are appended to the messages similarly
-     *                to using the
-     *                {@link javax.jms.Message#setObjectProperty(String, Object)}
-     *                method
+     *                         are strings and the values are primitive values (numbers
+     *                         and strings) which are appended to the messages similarly
+     *                         to using the
+     *                         {@link javax.jms.Message#setObjectProperty(String, Object)}
+     *                         method
      */
     @Override
     @Deprecated
@@ -2289,10 +2302,10 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
 
     /**
      * Unsubscribes a durable subscription that has been created by a client.
-     * <P>
+     * <p/>
      * This method deletes the state being maintained on behalf of the
      * subscriber by its provider.
-     * <P>
+     * <p/>
      * It is erroneous for a client to delete a durable subscription while there
      * is an active <CODE>MessageConsumer </CODE> or
      * <CODE>TopicSubscriber</CODE> for the subscription, or while a consumed
@@ -2300,10 +2313,10 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
      * the session.
      *
      * @param name the name used to identify this subscription
-     * @throws JMSException if the session fails to unsubscribe to the durable
-     *                 subscription due to some internal error.
+     * @throws JMSException                if the session fails to unsubscribe to the durable
+     *                                     subscription due to some internal error.
      * @throws InvalidDestinationException if an invalid subscription name is
-     *                 specified.
+     *                                     specified.
      * @since 1.1
      */
     @Override
@@ -2400,7 +2413,7 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
     protected void onConnectionControl(ConnectionControl command) {
         if (command.isFaultTolerant()) {
             this.optimizeAcknowledge = false;
-            for (Iterator<ActiveMQSession> i = this.sessions.iterator(); i.hasNext();) {
+            for (Iterator<ActiveMQSession> i = this.sessions.iterator(); i.hasNext(); ) {
                 ActiveMQSession s = i.next();
                 s.setOptimizeAcknowledge(false);
             }
@@ -2416,7 +2429,7 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
             for (ActiveMQSession session : this.sessions) {
                 session.setPrefetchSize(command.getConsumerId(), command.getPrefetch());
             }
-            for (ActiveMQConnectionConsumer connectionConsumer: connectionConsumers) {
+            for (ActiveMQConnectionConsumer connectionConsumer : connectionConsumers) {
                 ConsumerInfo consumerInfo = connectionConsumer.getConsumerInfo();
                 if (consumerInfo.getConsumerId().equals(command.getConsumerId())) {
                     consumerInfo.setPrefetchSize(command.getPrefetch());
@@ -2488,7 +2501,7 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
     }
 
     protected void waitForTransportInterruptionProcessingToComplete() throws InterruptedException {
-        if (!closed.get() && !transportFailed.get() && transportInterruptionProcessingComplete.get()>0) {
+        if (!closed.get() && !transportFailed.get() && transportInterruptionProcessingComplete.get() > 0) {
             LOG.warn("dispatch with outstanding dispatch interruption processing count " + transportInterruptionProcessingComplete.get());
             signalInterruptionProcessingComplete();
         }
@@ -2501,20 +2514,20 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
     }
 
     private void signalInterruptionProcessingComplete() {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("transportInterruptionProcessingComplete: " + transportInterruptionProcessingComplete.get()
-                        + " for:" + this.getConnectionInfo().getConnectionId());
-            }
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("transportInterruptionProcessingComplete: " + transportInterruptionProcessingComplete.get()
+                    + " for:" + this.getConnectionInfo().getConnectionId());
+        }
 
-            FailoverTransport failoverTransport = transport.narrow(FailoverTransport.class);
-            if (failoverTransport != null) {
-                failoverTransport.connectionInterruptProcessingComplete(this.getConnectionInfo().getConnectionId());
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("notified failover transport (" + failoverTransport
-                            + ") of interruption completion for: " + this.getConnectionInfo().getConnectionId());
-                }
+        FailoverTransport failoverTransport = transport.narrow(FailoverTransport.class);
+        if (failoverTransport != null) {
+            failoverTransport.connectionInterruptProcessingComplete(this.getConnectionInfo().getConnectionId());
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("notified failover transport (" + failoverTransport
+                        + ") of interruption completion for: " + this.getConnectionInfo().getConnectionId());
             }
-            transportInterruptionProcessingComplete.set(0);
+        }
+        transportInterruptionProcessingComplete.set(0);
     }
 
     private void signalInterruptionProcessingNeeded() {
@@ -2549,9 +2562,9 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
                 if (result == null) {
                     checkClosed();
                     try {
-                        result = scheduler = new Scheduler("ActiveMQConnection["+info.getConnectionId().getValue()+"] Scheduler");
+                        result = scheduler = new Scheduler("ActiveMQConnection[" + info.getConnectionId().getValue() + "] Scheduler");
                         scheduler.start();
-                    } catch(Exception e) {
+                    } catch (Exception e) {
                         throw JMSExceptionSupport.create(e);
                     }
                 }
@@ -2615,8 +2628,8 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
         }
 
         Iterator<ConcurrentHashMap.Entry<ActiveMQTempDestination, ActiveMQTempDestination>> entries
-            = this.activeTempDestinations.entrySet().iterator();
-        while(entries.hasNext()) {
+                = this.activeTempDestinations.entrySet().iterator();
+        while (entries.hasNext()) {
             ConcurrentHashMap.Entry<ActiveMQTempDestination, ActiveMQTempDestination> entry = entries.next();
             try {
                 // Only delete this temp destination if it was created from this connection. The connection used
@@ -2635,6 +2648,7 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
 
     /**
      * Sets the Connection wide RedeliveryPolicyMap for handling messages that are being rolled back.
+     *
      * @param redeliveryPolicyMap the redeliveryPolicyMap to set
      */
     public void setRedeliveryPolicyMap(RedeliveryPolicyMap redeliveryPolicyMap) {
@@ -2692,7 +2706,8 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
      * Sets the amount of time between scheduled sends of any outstanding Message Acks for consumers that
      * have been configured with optimizeAcknowledge enabled.
      *
-     * @param optimizedAckScheduledAckInterval the scheduledOptimizedAckInterval to set
+     * @param optimizedAckScheduledAckInterval
+     *         the scheduledOptimizedAckInterval to set
      */
     public void setOptimizedAckScheduledAckInterval(long optimizedAckScheduledAckInterval) {
         this.optimizedAckScheduledAckInterval = optimizedAckScheduledAckInterval;
