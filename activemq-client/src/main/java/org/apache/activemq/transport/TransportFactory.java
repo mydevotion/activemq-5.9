@@ -56,6 +56,9 @@ public abstract class TransportFactory {
     }
 
     /**
+     * 根据传入参数location的scheme,去从缓存中获取TransportFactory，
+     * 如果获取不到，则去"META-INF/services/org/apache/activemq/transport/"加载。
+     * 然后通过TransportFactory的doConnect返回Transport
      * Creates a normal transport.
      *
      * @param location
@@ -156,6 +159,7 @@ public abstract class TransportFactory {
     }
 
     /**
+     * 创建一个新的transport，需要子类继承
      * Factory method to create a new transport
      *
      * @throws IOException
@@ -166,6 +170,8 @@ public abstract class TransportFactory {
     }
 
     /**
+     * 根据传入的location的scheme去缓存中或者"/services/org/apache/activemq/transport"中加载TransportFactory
+     *
      * @param location
      * @return
      * @throws IOException
@@ -247,8 +253,9 @@ public abstract class TransportFactory {
     @SuppressWarnings("rawtypes")
     public Transport configure(Transport transport, WireFormat wf, Map options) throws Exception {
         transport = compositeConfigure(transport, wf, options);
-
+        // 继续进行封装，加入syncOnCommand = false
         transport = new MutexTransport(transport);
+        //继续封装
         transport = new ResponseCorrelator(transport);
 
         return transport;
@@ -272,6 +279,7 @@ public abstract class TransportFactory {
             transport = new ThreadNameFilter(transport);
         }
         transport = compositeConfigure(transport, format, options);
+        // 对transport有进行了封装
         transport = new MutexTransport(transport);
         return transport;
     }
@@ -288,6 +296,7 @@ public abstract class TransportFactory {
      */
     @SuppressWarnings("rawtypes")
     public Transport compositeConfigure(Transport transport, WireFormat format, Map options) {
+        // 如果URI里面有配置参数"soWriteTimeout"，则对transport进行封装
         if (options.containsKey(WRITE_TIMEOUT_FILTER)) {
             transport = new WriteTimeoutFilter(transport);
             String soWriteTimeout = (String) options.remove(WRITE_TIMEOUT_FILTER);
@@ -295,6 +304,7 @@ public abstract class TransportFactory {
                 ((WriteTimeoutFilter) transport).setWriteTimeout(Long.parseLong(soWriteTimeout));
             }
         }
+        // 将URI的配置参数通过反射配置到transport上
         IntrospectionSupport.setProperties(transport, options);
         return transport;
     }

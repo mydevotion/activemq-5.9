@@ -29,7 +29,7 @@ import java.util.Map;
 
 /**
  * Utility class that provides methods for parsing URI's
- *
+ * <p/>
  * This class can be used to split composite URI's into their component parts and is used to extract any
  * URI options from each URI in order to set specific properties on Beans.
  */
@@ -110,9 +110,7 @@ public class URISupport {
     /**
      * Give a URI break off any URI options and store them in a Key / Value Mapping.
      *
-     * @param uri
-     * 		The URI whose query should be extracted and processed.
-     *
+     * @param uri The URI whose query should be extracted and processed.
      * @return A Mapping of the URI options.
      * @throws URISyntaxException
      */
@@ -135,19 +133,17 @@ public class URISupport {
             }
             return rc;
         } catch (UnsupportedEncodingException e) {
-            throw (URISyntaxException)new URISyntaxException(e.toString(), "Invalid encoding").initCause(e);
+            throw (URISyntaxException) new URISyntaxException(e.toString(), "Invalid encoding").initCause(e);
         }
     }
 
     /**
      * Given a URI parse and extract any URI query options and return them as a Key / Value mapping.
-     *
+     * <p/>
      * This method differs from the {@link parseQuery} method in that it handles composite URI types and
      * will extract the URI options from the outermost composite URI.
      *
-     * @param uri
-     * 		The URI whose query should be extracted and processed.
-     *
+     * @param uri The URI whose query should be extracted and processed.
      * @return A Mapping of the URI options.
      * @throws URISyntaxException
      */
@@ -170,11 +166,8 @@ public class URISupport {
      * Given a Key / Value mapping create and append a URI query value that represents the mapped entries, return the
      * newly updated URI that contains the value of the given URI and the appended query value.
      *
-     * @param uri
-     * 		The source URI that will have the Map entries appended as a URI query value.
-     * @param queryParameters
-     * 		The Key / Value mapping that will be transformed into a URI query string.
-     *
+     * @param uri             The source URI that will have the Map entries appended as a URI query value.
+     * @param queryParameters The Key / Value mapping that will be transformed into a URI query string.
      * @return A new URI value that combines the given URI and the constructed query string.
      * @throws URISyntaxException
      */
@@ -187,22 +180,18 @@ public class URISupport {
      * newly updated URI that contains the value of the given URI and the appended query value.  Each entry in the query
      * string is prefixed by the supplied optionPrefix string.
      *
-     * @param uri
-     * 		The source URI that will have the Map entries appended as a URI query value.
-     * @param queryParameters
-     * 		The Key / Value mapping that will be transformed into a URI query string.
-     * @param optionPrefix
-     * 		A string value that when not null or empty is used to prefix each query option key.
-     *
+     * @param uri             The source URI that will have the Map entries appended as a URI query value.
+     * @param queryParameters The Key / Value mapping that will be transformed into a URI query string.
+     * @param optionPrefix    A string value that when not null or empty is used to prefix each query option key.
      * @return A new URI value that combines the given URI and the constructed query string.
      * @throws URISyntaxException
      */
     public static URI applyParameters(URI uri, Map<String, String> queryParameters, String optionPrefix) throws URISyntaxException {
         if (queryParameters != null && !queryParameters.isEmpty()) {
-            StringBuffer newQuery = uri.getRawQuery() != null ? new StringBuffer(uri.getRawQuery()) : new StringBuffer() ;
-            for ( Map.Entry<String, String> param: queryParameters.entrySet()) {
+            StringBuffer newQuery = uri.getRawQuery() != null ? new StringBuffer(uri.getRawQuery()) : new StringBuffer();
+            for (Map.Entry<String, String> param : queryParameters.entrySet()) {
                 if (param.getKey().startsWith(optionPrefix)) {
-                    if (newQuery.length()!=0) {
+                    if (newQuery.length() != 0) {
                         newQuery.append('&');
                     }
                     final String key = param.getKey().substring(optionPrefix.length());
@@ -222,9 +211,7 @@ public class URISupport {
     /**
      * Removes any URI query from the given uri and return a new URI that does not contain the query portion.
      *
-     * @param uri
-     * 		The URI whose query value is to be removed.
-     *
+     * @param uri The URI whose query value is to be removed.
      * @return a new URI that does not contain a query value.
      * @throws URISyntaxException
      */
@@ -235,11 +222,8 @@ public class URISupport {
     /**
      * Creates a URI with the given query, removing an previous query value from the given URI.
      *
-     * @param uri
-     * 		The source URI whose existing query is replaced with the newly supplied one.
-     * @param query
-     * 		The new URI query string that should be appended to the given URI.
-     *
+     * @param uri   The source URI whose existing query is replaced with the newly supplied one.
+     * @param query The new URI query string that should be appended to the given URI.
      * @return a new URI that is a combination of the original URI and the given query string.
      * @throws URISyntaxException
      */
@@ -264,9 +248,7 @@ public class URISupport {
      * Given a composite URI, parse the individual URI elements contained within that URI and return
      * a CompsoteData instance that contains the parsed URI values.
      *
-     * @param uri
-     * 		The target URI that should be parsed.
-     *
+     * @param uri The target URI that should be parsed.
      * @return a new CompsiteData instance representing the parsed composite URI.
      * @throws URISyntaxException
      */
@@ -274,6 +256,7 @@ public class URISupport {
 
         CompositeData rc = new CompositeData();
         rc.scheme = uri.getScheme();
+        // 是否以"//"开头，如果是的话则去掉"//"的部分
         String ssp = stripPrefix(uri.getRawSchemeSpecificPart().trim(), "//").trim();
 
         parseComposite(uri, rc, ssp);
@@ -285,9 +268,7 @@ public class URISupport {
     /**
      * Examine a URI and determine if it is a Composite type or not.
      *
-     * @param uri
-     * 		The URI that is to be examined.
-     *
+     * @param uri The URI that is to be examined.
      * @return true if the given URI is a Compsote type.
      */
     public static boolean isCompositeURI(URI uri) {
@@ -300,13 +281,11 @@ public class URISupport {
     }
 
     /**
+     * 传入的str第first个位置是"("，返回与之配对的")"的位置,中间可能存在多个"("和")"配对
      * Given a string and a position in that string of an open parend, find the matching close parend.
      *
-     * @param str
-     * 		The string to be searched for a matching parend.
-     * @param first
-     * 		The index in the string of the opening parend whose close value is to be searched.
-     *
+     * @param str   The string to be searched for a matching parend.
+     * @param first The index in the string of the opening parend whose close value is to be searched.
      * @return the index in the string where the closing parend is located.
      * @throws URISyntaxException fi the string does not contain a matching parend.
      */
@@ -346,27 +325,25 @@ public class URISupport {
      * parse the composite URI and populate the CompositeData object with the results.  The source URI is used only
      * for logging as the ssp should have already been extracted from it and passed here.
      *
-     * @param uri
-     * 		The original source URI whose ssp is parsed into the composite data.
-     * @param rc
-     * 		The CompsositeData instance that will be populated from the given ssp.
-     * @param ssp
-     * 		The scheme specific part from the original string that is a composite or one or more URIs.
-     *
+     * @param uri The original source URI whose ssp is parsed into the composite data.
+     * @param rc  The CompsositeData instance that will be populated from the given ssp.
+     * @param ssp The scheme specific part from the original string that is a composite or one or more URIs.
      * @throws URISyntaxException
      */
     private static void parseComposite(URI uri, CompositeData rc, String ssp) throws URISyntaxException {
         String componentString;
         String params;
 
+        // 是否"("和")"以配对形势出现
         if (!checkParenthesis(ssp)) {
             throw new URISyntaxException(uri.toString(), "Not a matching number of '(' and ')' parenthesis");
         }
 
         int p;
+
         int initialParen = ssp.indexOf("(");
         if (initialParen == 0) {
-
+            // 如果uri的"//"后面以"("开头
             rc.host = ssp.substring(0, initialParen);
             p = rc.host.indexOf("/");
 
@@ -384,6 +361,7 @@ public class URISupport {
             params = "";
         }
 
+        // 返回"()"中以","分割的字符串组成的数组
         String components[] = splitComponents(componentString);
         rc.components = new URI[components.length];
         for (int i = 0; i < components.length; i++) {
@@ -408,9 +386,7 @@ public class URISupport {
      * Given the inner portion of a composite URI, split and return each inner URI as a string
      * element in a new String array.
      *
-     * @param str
-     * 		The inner URI elements of a composite URI string.
-     *
+     * @param str The inner URI elements of a composite URI string.
      * @return an array containing each inner URI from the composite one.
      */
     private static String[] splitComponents(String str) {
@@ -421,20 +397,20 @@ public class URISupport {
         char chars[] = str.toCharArray();
         for (int i = 0; i < chars.length; i++) {
             switch (chars[i]) {
-            case '(':
-                depth++;
-                break;
-            case ')':
-                depth--;
-                break;
-            case ',':
-                if (depth == 0) {
-                    String s = str.substring(last, i);
-                    l.add(s);
-                    last = i + 1;
-                }
-                break;
-            default:
+                case '(':
+                    depth++;
+                    break;
+                case ')':
+                    depth--;
+                    break;
+                case ',':
+                    if (depth == 0) {
+                        String s = str.substring(last, i);
+                        l.add(s);
+                        last = i + 1;
+                    }
+                    break;
+                default:
             }
         }
 
@@ -449,13 +425,11 @@ public class URISupport {
     }
 
     /**
+     * 如果传入的字符串value以prefix开头，则返回去掉prefix之后的值，否则传回本身
      * String the given prefix from the target string and return the result.
      *
-     * @param value
-     * 		The string that should be trimmed of the given prefix if present.
-     * @param prefix
-     * 		The prefix to remove from the target string.
-     *
+     * @param value  The string that should be trimmed of the given prefix if present.
+     * @param prefix The prefix to remove from the target string.
      * @return either the original string or a new string minus the supplied prefix if present.
      */
     public static String stripPrefix(String value, String prefix) {
@@ -468,9 +442,7 @@ public class URISupport {
     /**
      * Strip a URI of its scheme element.
      *
-     * @param uri
-     * 		The URI whose scheme value should be stripped.
-     *
+     * @param uri The URI whose scheme value should be stripped.
      * @return The stripped URI value.
      * @throws URISyntaxException
      */
@@ -482,9 +454,7 @@ public class URISupport {
      * Given a key / value mapping, create and return a URI formatted query string that is valid and
      * can be appended to a URI.
      *
-     * @param options
-     * 		The Mapping that will create the new Query string.
-     *
+     * @param options The Mapping that will create the new Query string.
      * @return a URI formatted query string.
      * @throws URISyntaxException
      */
@@ -499,7 +469,7 @@ public class URISupport {
                     } else {
                         rc.append("&");
                     }
-                    String value = (String)options.get(key);
+                    String value = (String) options.get(key);
                     rc.append(URLEncoder.encode(key, "UTF-8"));
                     rc.append("=");
                     rc.append(URLEncoder.encode(value, "UTF-8"));
@@ -509,23 +479,20 @@ public class URISupport {
                 return "";
             }
         } catch (UnsupportedEncodingException e) {
-            throw (URISyntaxException)new URISyntaxException(e.toString(), "Invalid encoding").initCause(e);
+            throw (URISyntaxException) new URISyntaxException(e.toString(), "Invalid encoding").initCause(e);
         }
     }
 
     /**
      * Creates a URI from the original URI and the remaining parameters.
-     *
+     * <p/>
      * When the query options of a URI are applied to certain objects the used portion of the query options needs
      * to be removed and replaced with those that remain so that other parts of the code can attempt to apply the
      * remainder or give an error is unknown values were given.  This method is used to update a URI with those
      * remainder values.
      *
-     * @param originalURI
-     *		The URI whose current parameters are remove and replaced with the given remainder value.
-     * @param params
-     * 		The URI params that should be used to replace the current ones in the target.
-     *
+     * @param originalURI The URI whose current parameters are remove and replaced with the given remainder value.
+     * @param params      The URI params that should be used to replace the current ones in the target.
      * @return a new URI that matches the original one but has its query options replaced with the given ones.
      * @throws URISyntaxException
      */
@@ -541,25 +508,21 @@ public class URISupport {
      * Given a URI value create and return a new URI that matches the target one but with the scheme value
      * supplied to this method.
      *
-     * @param bindAddr
-     * 		The URI whose scheme value should be altered.
-     * @param scheme
-     * 		The new scheme value to use for the returned URI.
-     *
+     * @param bindAddr The URI whose scheme value should be altered.
+     * @param scheme   The new scheme value to use for the returned URI.
      * @return a new URI that is a copy of the original except that its scheme matches the supplied one.
      * @throws URISyntaxException
      */
     public static URI changeScheme(URI bindAddr, String scheme) throws URISyntaxException {
         return new URI(scheme, bindAddr.getUserInfo(), bindAddr.getHost(), bindAddr.getPort(), bindAddr
-            .getPath(), bindAddr.getQuery(), bindAddr.getFragment());
+                .getPath(), bindAddr.getQuery(), bindAddr.getFragment());
     }
 
     /**
+     * 检测传入的字符串含有的"("和")"是否相等，不保证能配对。如)(检测为真
      * Examine the supplied string and ensure that all parends appear as matching pairs.
      *
-     * @param str
-     * 		The target string to examine.
-     *
+     * @param str The target string to examine.
      * @return true if the target string has valid parend pairings.
      */
     public static boolean checkParenthesis(String str) {

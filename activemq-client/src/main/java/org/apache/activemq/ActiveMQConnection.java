@@ -238,9 +238,11 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
         String uniqueId = connectionIdGenerator.generateId();
         this.info = new ConnectionInfo(new ConnectionId(uniqueId));
         this.info.setManageable(true);
+        // 容错从transport拿,false
         this.info.setFaultTolerant(transport.isFaultTolerant());
         this.connectionSessionId = new SessionId(info.getConnectionId(), -1);
 
+        // 本类是一个TransportListener，注册到transport;transport负责连接，然后将连接后的事情交给本类处理
         this.transport.setTransportListener(this);
 
         this.stats = new JMSConnectionStatsImpl(sessions, this instanceof XAConnection);
@@ -326,6 +328,7 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
         checkClosedOrFailed();
         ensureConnectionInfoSent();
         if (!transacted) {
+            // 如果不是事务模式，则不能选择Session.SESSION_TRANSACTED模式，因为非事务模式，session是无状态的
             if (acknowledgeMode == Session.SESSION_TRANSACTED) {
                 throw new JMSException("acknowledgeMode SESSION_TRANSACTED cannot be used for an non-transacted Session");
             } else if (acknowledgeMode < Session.SESSION_TRANSACTED || acknowledgeMode > ActiveMQSession.MAX_ACK_CONSTANT) {
@@ -514,6 +517,7 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
     }
 
     /**
+     * Connection启动入口
      * Starts (or restarts) a connection's delivery of incoming messages. A call
      * to <CODE>start</CODE> on a connection that has already been started is
      * ignored.
@@ -1508,17 +1512,21 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
     }
 
     /**
+     * 将连接信息发送给Broker
      * Send the ConnectionInfo to the Broker
      *
      * @throws JMSException
      */
     protected void ensureConnectionInfoSent() throws JMSException {
+        // 加锁，确保发送连接信息到Broker是互斥的
         synchronized (this.ensureConnectionInfoSentMutex) {
             // Can we skip sending the ConnectionInfo packet??
+            // 如果连接信息已经发送给服务端,或者是连接已经关闭，则返回
             if (isConnectionInfoSentToBroker || closed.get()) {
                 return;
             }
             //TODO shouldn't this check be on userSpecifiedClientID rather than the value of clientID?
+            // 设置客户端连接ID
             if (info.getClientId() == null || info.getClientId().trim().length() == 0) {
                 info.setClientId(clientIdGenerator.generateId());
             }

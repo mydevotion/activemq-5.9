@@ -23,9 +23,8 @@ import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.util.IndentPrinter;
 
 /**
+ * 多个JMS连接的统计器
  * Statistics for a number of JMS connections
- * 
- * 
  */
 public class JMSStatsImpl extends StatsImpl {
     private List<ActiveMQConnection> connections = new CopyOnWriteArrayList<ActiveMQConnection>();
@@ -38,7 +37,7 @@ public class JMSStatsImpl extends StatsImpl {
         int size = connectionArray.length;
         JMSConnectionStatsImpl[] answer = new JMSConnectionStatsImpl[size];
         for (int i = 0; i < size; i++) {
-            ActiveMQConnection connection = (ActiveMQConnection)connectionArray[i];
+            ActiveMQConnection connection = (ActiveMQConnection) connectionArray[i];
             answer[i] = connection.getConnectionStats();
         }
         return answer;
@@ -58,7 +57,7 @@ public class JMSStatsImpl extends StatsImpl {
         out.incrementIndent();
         JMSConnectionStatsImpl[] array = getConnections();
         for (int i = 0; i < array.length; i++) {
-            JMSConnectionStatsImpl connectionStat = (JMSConnectionStatsImpl)array[i];
+            JMSConnectionStatsImpl connectionStat = (JMSConnectionStatsImpl) array[i];
             connectionStat.dump(out);
         }
         out.decrementIndent();

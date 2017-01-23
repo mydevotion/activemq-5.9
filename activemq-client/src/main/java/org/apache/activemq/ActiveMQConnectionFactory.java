@@ -318,6 +318,8 @@ public class ActiveMQConnectionFactory extends JNDIBaseStorable implements Conne
     }
 
     /**
+     * 创建一个基于本类连接属性配置的Transport.从createActiveMQConnection分离出来是为了让子类能过重写
+     * <p/>
      * Creates a Transport based on this object's connection settings. Separated
      * from createActiveMQConnection to allow for subclasses to override.
      *
@@ -342,6 +344,7 @@ public class ActiveMQConnectionFactory extends JNDIBaseStorable implements Conne
         ActiveMQConnection connection = null;
         try {
             Transport transport = createTransport();
+            // 多次调用该方法，factoryStats是同一个
             connection = createActiveMQConnection(transport, factoryStats);
 
             connection.setUserName(userName);
@@ -373,6 +376,14 @@ public class ActiveMQConnectionFactory extends JNDIBaseStorable implements Conne
         }
     }
 
+    /**
+     * 创建连接
+     *
+     * @param transport
+     * @param stats
+     * @return
+     * @throws Exception
+     */
     protected ActiveMQConnection createActiveMQConnection(Transport transport, JMSStatsImpl stats) throws Exception {
         ActiveMQConnection connection = new ActiveMQConnection(transport, getClientIdGenerator(),
                 getConnectionIdGenerator(), stats);
@@ -476,7 +487,7 @@ public class ActiveMQConnectionFactory extends JNDIBaseStorable implements Conne
         } else {
 
             // It might be a composite URI.
-            // 可能是一个复合的URI
+            // 可能是一个复合的URI，如"failover:(tcp://localhost:61616,tcp://localhost:61617)?initialReconnectDelay=100"
             try {
                 CompositeData data = URISupport.parseComposite(this.brokerURL);
                 Map<String, Object> jmsOptionsMap = IntrospectionSupport.extractProperties(data.getParameters(), "jms.");
