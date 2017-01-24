@@ -1,5 +1,5 @@
 /**
-gxfdgvdfg * Licensed to the Apache Software Foundation (ASF) under one or more
+ gxfdgvdfg * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
@@ -44,7 +44,6 @@ import java.util.concurrent.atomic.AtomicReference;
  * An implementation of the {@link Transport} interface using raw tcp/ip
  *
  * @author David Martin Clavo david(dot)martin(dot)clavo(at)gmail.com (logging improvement modifications)
- *
  */
 public class TcpTransport extends TransportThreadSupport implements Transport, Service, Runnable {
     private static final Logger LOG = LoggerFactory.getLogger(TcpTransport.class);
@@ -56,7 +55,7 @@ public class TcpTransport extends TransportThreadSupport implements Transport, S
     protected int soTimeout;
     protected int socketBufferSize = 64 * 1024;
     protected int ioBufferSize = 8 * 1024;
-    protected boolean closeAsync=true;
+    protected boolean closeAsync = true;
     protected Socket socket;
     protected DataOutputStream dataOut;
     protected DataInputStream dataIn;
@@ -71,6 +70,7 @@ public class TcpTransport extends TransportThreadSupport implements Transport, S
      */
     private boolean trafficClassSet = false;
     /**
+     * 阻止同时设置既要设置差异化服务又要设置服务传输类型
      * Prevents setting both the Differentiated Services and Type of Service
      * transport options at the same time, since they share the same spot in
      * the TCP/IP packet headers.
@@ -134,7 +134,7 @@ public class TcpTransport extends TransportThreadSupport implements Transport, S
      * @param wireFormat
      * @param socketFactory
      * @param remoteLocation
-     * @param localLocation - e.g. local InetAddress and local port
+     * @param localLocation  - e.g. local InetAddress and local port
      * @throws IOException
      * @throws UnknownHostException
      */
@@ -182,15 +182,17 @@ public class TcpTransport extends TransportThreadSupport implements Transport, S
     @Override
     public String toString() {
         return "" + (socket.isConnected() ? "tcp://" + socket.getInetAddress() + ":" + socket.getPort() + "@" + socket.getLocalPort()
-                : (localLocation != null ? localLocation : remoteLocation)) ;
+                : (localLocation != null ? localLocation : remoteLocation));
     }
 
     /**
+     * 该方法会在{@link org.apache.activemq.transport.TransportThreadSupport#doStart()}里通过启动线程被调用
+     * <p/>
      * reads packets from a Socket
      */
     public void run() {
         LOG.trace("TCP consumer thread for " + this + " starting");
-        this.runnerThread=Thread.currentThread();
+        this.runnerThread = Thread.currentThread();
         try {
             while (!isStopped()) {
                 doRun();
@@ -198,12 +200,12 @@ public class TcpTransport extends TransportThreadSupport implements Transport, S
         } catch (IOException e) {
             stoppedLatch.get().countDown();
             onException(e);
-        } catch (Throwable e){
+        } catch (Throwable e) {
             stoppedLatch.get().countDown();
-            IOException ioe=new IOException("Unexpected error occured: " + e);
+            IOException ioe = new IOException("Unexpected error occured: " + e);
             ioe.initCause(e);
             onException(ioe);
-        }finally {
+        } finally {
             stoppedLatch.get().countDown();
         }
     }
@@ -354,6 +356,7 @@ public class TcpTransport extends TransportThreadSupport implements Transport, S
 
     /**
      * Enable/disable soLinger
+     *
      * @param soLinger enabled if > -1, disabled if == -1, system default otherwise
      */
     public void setSoLinger(int soLinger) {
@@ -416,11 +419,12 @@ public class TcpTransport extends TransportThreadSupport implements Transport, S
     }
 
     /**
+     * 设置Socket的参数
      * Configures the socket for use
      *
-     * @param sock  the socket
+     * @param sock the socket
      * @throws SocketException, IllegalArgumentException if setting the options
-     *         on the socket failed.
+     *                          on the socket failed.
      */
     protected void initialiseSocket(Socket sock) throws SocketException, IllegalArgumentException {
         if (socketOptions != null) {
@@ -434,14 +438,17 @@ public class TcpTransport extends TransportThreadSupport implements Transport, S
         }
 
         try {
+            // 设置接收缓冲区大小和发送缓冲区大小
             sock.setReceiveBufferSize(socketBufferSize);
             sock.setSendBufferSize(socketBufferSize);
         } catch (SocketException se) {
             LOG.warn("Cannot set socket buffer size = " + socketBufferSize);
             LOG.debug("Cannot set socket buffer size. Reason: " + se.getMessage() + ". This exception is ignored.", se);
         }
+        // 设置超时时间
         sock.setSoTimeout(soTimeout);
 
+        // 设置KeepAlive属性
         if (keepAlive != null) {
             sock.setKeepAlive(keepAlive.booleanValue());
         }
@@ -459,6 +466,11 @@ public class TcpTransport extends TransportThreadSupport implements Transport, S
         }
     }
 
+    /**
+     * 该方法会在{@link org.apache.activemq.util.ServiceSupport#start()}里被调用
+     *
+     * @throws Exception
+     */
     @Override
     protected void doStart() throws Exception {
         connect();
@@ -466,6 +478,11 @@ public class TcpTransport extends TransportThreadSupport implements Transport, S
         super.doStart();
     }
 
+    /**
+     * 本类在{@link #doStart()}方法被调用
+     *
+     * @throws Exception
+     */
     protected void connect() throws Exception {
 
         if (socket == null && socketFactory == null) {
@@ -477,7 +494,7 @@ public class TcpTransport extends TransportThreadSupport implements Transport, S
 
         if (localLocation != null) {
             localAddress = new InetSocketAddress(InetAddress.getByName(localLocation.getHost()),
-                                                 localLocation.getPort());
+                    localLocation.getPort());
         }
 
         if (remoteLocation != null) {
@@ -490,12 +507,14 @@ public class TcpTransport extends TransportThreadSupport implements Transport, S
 
         if (socket != null) {
 
+            // 如果本地端口不为null,则开放本地端口
             if (localAddress != null) {
                 socket.bind(localAddress);
             }
 
             // If it's a server accepted socket.. we don't need to connect it
             // to a remote address.
+            // 如果是一个服务端接收socket，就不需要连接到远端端口
             if (remoteAddress != null) {
                 if (connectionTimeout >= 0) {
                     socket.connect(remoteAddress, connectionTimeout);
@@ -509,7 +528,7 @@ public class TcpTransport extends TransportThreadSupport implements Transport, S
             // This means the timout option are not supported either.
             if (localAddress != null) {
                 socket = socketFactory.createSocket(remoteAddress.getAddress(), remoteAddress.getPort(),
-                                                    localAddress.getAddress(), localAddress.getPort());
+                        localAddress.getAddress(), localAddress.getPort());
             } else {
                 socket = socketFactory.createSocket(remoteAddress.getAddress(), remoteAddress.getPort());
             }
@@ -552,7 +571,7 @@ public class TcpTransport extends TransportThreadSupport implements Transport, S
                 });
 
                 try {
-                    latch.await(1,TimeUnit.SECONDS);
+                    latch.await(1, TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 } finally {
@@ -582,7 +601,7 @@ public class TcpTransport extends TransportThreadSupport implements Transport, S
         super.stop();
         CountDownLatch countDownLatch = stoppedLatch.get();
         if (countDownLatch != null && Thread.currentThread() != this.runnerThread) {
-            countDownLatch.await(1,TimeUnit.SECONDS);
+            countDownLatch.await(1, TimeUnit.SECONDS);
         }
     }
 
@@ -593,16 +612,19 @@ public class TcpTransport extends TransportThreadSupport implements Transport, S
                 receiveCounter++;
                 return super.read();
             }
+
             @Override
             public int read(byte[] b, int off, int len) throws IOException {
                 receiveCounter++;
                 return super.read(b, off, len);
             }
+
             @Override
             public long skip(long n) throws IOException {
                 receiveCounter++;
                 return super.skip(n);
             }
+
             @Override
             protected void fill() throws IOException {
                 receiveCounter++;
@@ -632,7 +654,7 @@ public class TcpTransport extends TransportThreadSupport implements Transport, S
         if (socket != null) {
             SocketAddress address = socket.getRemoteSocketAddress();
             if (address instanceof InetSocketAddress) {
-                return "tcp://" + ((InetSocketAddress)address).getAddress().getHostAddress() + ":" + ((InetSocketAddress)address).getPort();
+                return "tcp://" + ((InetSocketAddress) address).getAddress().getHostAddress() + ":" + ((InetSocketAddress) address).getPort();
             } else {
                 return "" + socket.getRemoteSocketAddress();
             }
@@ -644,7 +666,7 @@ public class TcpTransport extends TransportThreadSupport implements Transport, S
     public <T> T narrow(Class<T> target) {
         if (target == Socket.class) {
             return target.cast(socket);
-        } else if ( target == TimeStampStream.class) {
+        } else if (target == TimeStampStream.class) {
             return target.cast(buffOut);
         }
         return super.narrow(target);
@@ -657,22 +679,22 @@ public class TcpTransport extends TransportThreadSupport implements Transport, S
     /**
      * @param sock The socket on which to set the Traffic Class.
      * @return Whether or not the Traffic Class was set on the given socket.
-     * @throws SocketException if the system does not support setting the
-     *         Traffic Class.
+     * @throws SocketException          if the system does not support setting the
+     *                                  Traffic Class.
      * @throws IllegalArgumentException if both the Differentiated Services and
-     *         Type of Services transport options have been set on the same
-     *         connection.
+     *                                  Type of Services transport options have been set on the same
+     *                                  connection.
      */
     private boolean setTrafficClass(Socket sock) throws SocketException,
             IllegalArgumentException {
         if (sock == null
-            || (!this.diffServChosen && !this.typeOfServiceChosen)) {
+                || (!this.diffServChosen && !this.typeOfServiceChosen)) {
             return false;
         }
         if (this.diffServChosen && this.typeOfServiceChosen) {
             throw new IllegalArgumentException("Cannot set both the "
-                + " Differentiated Services and Type of Services transport "
-                + " options on the same connection.");
+                    + " Differentiated Services and Type of Services transport "
+                    + " options on the same connection.");
         }
 
         sock.setTrafficClass(this.trafficClass);
@@ -686,14 +708,14 @@ public class TcpTransport extends TransportThreadSupport implements Transport, S
             if ((this.trafficClass >> 2) == (resultTrafficClass >> 2)
                     && (this.trafficClass & 3) != (resultTrafficClass & 3)) {
                 LOG.warn("Attempted to set the Traffic Class to "
-                    + this.trafficClass + " but the result Traffic Class was "
-                    + resultTrafficClass + ". Please check that your system "
-                    + "allows you to set the ECN bits (the first two bits).");
+                        + this.trafficClass + " but the result Traffic Class was "
+                        + resultTrafficClass + ". Please check that your system "
+                        + "allows you to set the ECN bits (the first two bits).");
             } else {
                 LOG.warn("Attempted to set the Traffic Class to "
-                    + this.trafficClass + " but the result Traffic Class was "
-                    + resultTrafficClass + ". Please check that your system "
-                         + "supports java.net.setTrafficClass.");
+                        + this.trafficClass + " but the result Traffic Class was "
+                        + resultTrafficClass + ". Please check that your system "
+                        + "supports java.net.setTrafficClass.");
             }
             return false;
         }

@@ -19,8 +19,6 @@ package org.apache.activemq.transport;
 /**
  * A useful base class for a transport implementation which has a background
  * reading thread.
- * 
- * 
  */
 public abstract class TransportThreadSupport extends TransportSupport implements Runnable {
 
@@ -37,6 +35,11 @@ public abstract class TransportThreadSupport extends TransportSupport implements
         this.daemon = daemon;
     }
 
+    /**
+     * 该方法会在{@link org.apache.activemq.util.ServiceSupport#start()}里被调用，会被各个子类重写
+     *
+     * @throws Exception
+     */
     protected void doStart() throws Exception {
         runner = new Thread(null, this, "ActiveMQ Transport: " + toString(), stackSize);
         runner.setDaemon(daemon);

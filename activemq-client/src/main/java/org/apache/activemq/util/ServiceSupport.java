@@ -27,8 +27,6 @@ import org.slf4j.LoggerFactory;
 /**
  * A helper class for working with services together with a useful base class
  * for service implementations.
- * 
- * 
  */
 public abstract class ServiceSupport implements Service {
     private static final Logger LOG = LoggerFactory.getLogger(ServiceSupport.class);
@@ -36,7 +34,7 @@ public abstract class ServiceSupport implements Service {
     private AtomicBoolean started = new AtomicBoolean(false);
     private AtomicBoolean stopping = new AtomicBoolean(false);
     private AtomicBoolean stopped = new AtomicBoolean(false);
-    private List<ServiceListener>serviceListeners = new CopyOnWriteArrayList<ServiceListener>();
+    private List<ServiceListener> serviceListeners = new CopyOnWriteArrayList<ServiceListener>();
 
     public static void dispose(Service service) {
         try {
@@ -46,6 +44,11 @@ public abstract class ServiceSupport implements Service {
         }
     }
 
+    /**
+     * 该方法在{@link org.apache.activemq.ActiveMQConnectionFactory#createActiveMQConnection(String, String)}里被调用
+     *
+     * @throws Exception
+     */
     public void start() throws Exception {
         if (started.compareAndSet(false, true)) {
             boolean success = false;
@@ -57,7 +60,7 @@ public abstract class ServiceSupport implements Service {
             } finally {
                 started.set(success);
             }
-            for(ServiceListener l:this.serviceListeners) {
+            for (ServiceListener l : this.serviceListeners) {
                 l.started(this);
             }
         }
@@ -77,7 +80,7 @@ public abstract class ServiceSupport implements Service {
             stopped.set(true);
             started.set(false);
             stopping.set(false);
-            for(ServiceListener l:this.serviceListeners) {
+            for (ServiceListener l : this.serviceListeners) {
                 l.stopped(this);
             }
             stopper.throwFirstException();
@@ -104,32 +107,32 @@ public abstract class ServiceSupport implements Service {
     public boolean isStopped() {
         return stopped.get();
     }
-    
+
     public void addServiceListener(ServiceListener l) {
         this.serviceListeners.add(l);
     }
-    
+
     public void removeServiceListener(ServiceListener l) {
         this.serviceListeners.remove(l);
     }
 
     /**
-     *
      * handle for various operations after stopping the service (like locking)
      *
      * @throws Exception
      */
-    protected void postStop(ServiceStopper stopper) throws Exception {}
+    protected void postStop(ServiceStopper stopper) throws Exception {
+    }
 
     protected abstract void doStop(ServiceStopper stopper) throws Exception;
 
     /**
-     *
      * handle for various operations before starting the service (like locking)
      *
      * @throws Exception
      */
-    protected void preStart() throws Exception {}
+    protected void preStart() throws Exception {
+    }
 
     protected abstract void doStart() throws Exception;
 }

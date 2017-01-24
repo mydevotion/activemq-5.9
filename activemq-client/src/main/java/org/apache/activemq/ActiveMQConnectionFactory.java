@@ -351,7 +351,7 @@ public class ActiveMQConnectionFactory extends JNDIBaseStorable implements Conne
             connection.setPassword(password);
 
             configureConnection(connection);
-
+            // 重要：此处调用了transport的start方法，灰常重要
             transport.start();
 
             if (clientID != null) {
