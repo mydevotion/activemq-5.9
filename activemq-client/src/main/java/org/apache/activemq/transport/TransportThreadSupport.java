@@ -25,6 +25,7 @@ public abstract class TransportThreadSupport extends TransportSupport implements
     private boolean daemon;
     private Thread runner;
     // should be a multiple of 128k
+    // 新线程的预期堆栈大小，为零时表示忽略该参数。
     private long stackSize;
 
     public boolean isDaemon() {

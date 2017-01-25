@@ -51,6 +51,7 @@ public class TcpTransport extends TransportThreadSupport implements Transport, S
     protected final URI localLocation;
     protected final WireFormat wireFormat;
 
+    // 默认30秒
     protected int connectionTimeout = 30000;
     protected int soTimeout;
     protected int socketBufferSize = 64 * 1024;
@@ -210,6 +211,11 @@ public class TcpTransport extends TransportThreadSupport implements Transport, S
         }
     }
 
+    /**
+     * 调用{@link #start()}启动的线程跑的程序
+     *
+     * @throws IOException
+     */
     protected void doRun() throws IOException {
         try {
             Object command = readCommand();
@@ -427,11 +433,22 @@ public class TcpTransport extends TransportThreadSupport implements Transport, S
      *                          on the socket failed.
      */
     protected void initialiseSocket(Socket sock) throws SocketException, IllegalArgumentException {
+        /**
+         * socketOptions 在{@link org.apache.activemq.transport.tcp.TcpTransportFactory#compositeConfigure(org.apache.activemq.transport.Transport, org.apache.activemq.wireformat.WireFormat, java.util.Map)}
+         * 里有调用设置
+         * 而这个方法在{@link org.apache.activemq.transport.TransportFactory#configure(org.apache.activemq.transport.Transport, org.apache.activemq.wireformat.WireFormat, java.util.Map)}
+         * 里面有调动，各种设置吧
+         *
+         * 非常重要:一定要看清子类重写父类的方法，而不是单单盯着父类的方法看
+         *
+         * 在客户端URI上面的参数上如果有以"socket."开头的属性，就会设置到socketOptions上来
+         */
         if (socketOptions != null) {
             // copy the map as its used values is being removed when calling setProperties
             // and we need to be able to set the options again in case socket is re-initailized
             Map<String, Object> copy = new HashMap<String, Object>(socketOptions);
             IntrospectionSupport.setProperties(socket, copy);
+            //sock.setKeepAlive();
             if (!copy.isEmpty()) {
                 throw new IllegalArgumentException("Invalid socket parameters: " + copy);
             }

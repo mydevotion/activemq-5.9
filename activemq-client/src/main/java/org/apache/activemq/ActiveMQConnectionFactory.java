@@ -335,6 +335,9 @@ public class ActiveMQConnectionFactory extends JNDIBaseStorable implements Conne
     }
 
     /**
+     * 创建Connection，
+     * 注意：Transport类的参数配置是通过URL传递的
+     *
      * @return Returns the Connection.
      */
     protected ActiveMQConnection createActiveMQConnection(String userName, String password) throws JMSException {
@@ -450,6 +453,7 @@ public class ActiveMQConnectionFactory extends JNDIBaseStorable implements Conne
     }
 
     /**
+     * 根据URL配置的参数设置参数配置
      * Sets the <a
      * href="http://activemq.apache.org/configuring-transports.html">connection
      * URL</a> used to connect to the ActiveMQ broker.
@@ -464,9 +468,10 @@ public class ActiveMQConnectionFactory extends JNDIBaseStorable implements Conne
         if (this.brokerURL.getQuery() != null) {
             // It might be a standard URI or...
             try {
-                // 根据"?"后的参数，将"="两边以key和value的形式，放入map中
+                // 根据"?"后的参数，将"="两边以key和value的形式，放入map中，实际上map里面还可能包含更多设置Transport的参数
                 Map<String, String> map = URISupport.parseQuery(this.brokerURL.getQuery());
                 //上一步的map中如果如果有以"jms."开头的key，则去掉"jms."放入到下面的map中
+                // 注意只取"jms."开头的URL里面的配置参数,而不是所有
                 Map<String, Object> jmsOptionsMap = IntrospectionSupport.extractProperties(map, "jms.");
                 if (buildFromMap(jmsOptionsMap)) {
                     if (!jmsOptionsMap.isEmpty()) {

@@ -115,13 +115,23 @@ public abstract class TransportFactory {
         return tf.doBind(location);
     }
 
+    /**
+     * 从传入的URI中获取参数配置
+     *
+     * @param location
+     * @return
+     * @throws Exception
+     */
     public Transport doConnect(URI location) throws Exception {
         try {
+            // 从URL中取出配置参数，初始化WireFormat和Transport
             Map<String, String> options = new HashMap<String, String>(URISupport.parseParameters(location));
             if (!options.containsKey("wireFormat.host")) {
                 options.put("wireFormat.host", location.getHost());
             }
+            // 将以"wireFormat."开头的属性设置到WireFormat属性里面的WireFormatInfo属性上
             WireFormat wf = createWireFormat(options);
+            //
             Transport transport = createTransport(location, wf);
             Transport rc = configure(transport, wf, options);
             if (!options.isEmpty()) {
@@ -215,7 +225,7 @@ public abstract class TransportFactory {
 
     /**
      * 生成WireFormatFactory，如果传入的参数中没有key为"wireFormat"的值，则默认采用"default"
-     * 根据反射机制，将options设置到WireFormatFactory上
+     * 根据反射机制，将options的key有以"wireFormat."开头的属性设置到WireFormatFactory上
      *
      * @param options
      * @return

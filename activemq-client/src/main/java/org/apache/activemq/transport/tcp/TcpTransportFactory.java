@@ -38,7 +38,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author David Martin Clavo david(dot)martin(dot)clavo(at)gmail.com (logging improvement modifications)
- *
  */
 public class TcpTransportFactory extends TransportFactory {
     private static final Logger LOG = LoggerFactory.getLogger(TcpTransportFactory.class);
@@ -78,9 +77,11 @@ public class TcpTransportFactory extends TransportFactory {
     @SuppressWarnings("rawtypes")
     public Transport compositeConfigure(Transport transport, WireFormat format, Map options) {
 
-        TcpTransport tcpTransport = (TcpTransport)transport.narrow(TcpTransport.class);
+        TcpTransport tcpTransport = (TcpTransport) transport.narrow(TcpTransport.class);
+        // 这个地方会把参数设置到tcpTransport上
         IntrospectionSupport.setProperties(tcpTransport, options);
 
+        // 或者是通过这个地方在key上添加"socket."前缀配置TcpTransport，反正两种方式都是设置到 tcpTransport的Socket上
         Map<String, Object> socketOptions = IntrospectionSupport.extractProperties(options, "socket.");
         tcpTransport.setSocketOptions(socketOptions);
 
@@ -100,7 +101,7 @@ public class TcpTransportFactory extends TransportFactory {
 
         // Only need the WireFormatNegotiator if using openwire
         if (format instanceof OpenWireFormat) {
-            transport = new WireFormatNegotiator(transport, (OpenWireFormat)format, tcpTransport.getMinmumWireFormatVersion());
+            transport = new WireFormatNegotiator(transport, (OpenWireFormat) format, tcpTransport.getMinmumWireFormatVersion());
         }
 
         return super.compositeConfigure(transport, format, options);
@@ -116,6 +117,7 @@ public class TcpTransportFactory extends TransportFactory {
 
     protected Transport createTransport(URI location, WireFormat wf) throws UnknownHostException, IOException {
         URI localLocation = null;
+        // path取的是URI里面，第一个"/"之后的部分，但是不包括"?"之后的部分
         String path = location.getPath();
         // see if the path is a local URI location
         if (path != null && path.length() > 0) {
@@ -126,16 +128,18 @@ public class TcpTransportFactory extends TransportFactory {
                 localLocation = new URI(localString);
             } catch (Exception e) {
                 LOG.warn("path isn't a valid local location for TcpTransport to use", e.getMessage());
-                if(LOG.isDebugEnabled()) {
+                if (LOG.isDebugEnabled()) {
                     LOG.debug("Failure detail", e);
                 }
             }
         }
+        // 如果location形如"tcp://192.168.3:61616/127.0.0.1:8080"，则localLocation为"tcp://127.0.0.1:8080"
         SocketFactory socketFactory = createSocketFactory();
         return createTcpTransport(wf, socketFactory, location, localLocation);
     }
 
     /**
+     * new 一个TcpTransport返回
      * Allows subclasses of TcpTransportFactory to provide a create custom
      * TcpTransport intances.
      *
